@@ -1,0 +1,27 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+    <title>Dashboard</title>
+  </head>
+  <body>
+    <h1>This is all of our leads</h1>
+    <ul>
+      {% if leads %} {% for lead in leads %}
+      <li class="lead">
+        <a href="/leads/{{lead.id}}/">
+          {{lead.first_name}} {{lead.last_name}}
+        </a>
+        : Age {{lead.age}}
+      </li>
+
+      {% endfor %} {% else %}
+
+      <li>No leads</li>
+      {% endif %}
+    </ul>
+  </body>
+</html>
