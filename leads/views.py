@@ -1,3 +1,6 @@
+# Почтовая форма отправки
+from django.core.mail import send_mail
+# Переадресация
 from django.shortcuts import redirect, render
 from django.urls import reverse
 # Генерирует готовые шаблоны / CRUD+L
@@ -5,9 +8,25 @@ from django.urls import reverse
 # TemplateView - без использования моделей
 from django.views.generic import TemplateView, ListView, DetailView, CreateView, UpdateView, DeleteView
 from .models import Lead, Agent
-from .forms import LeadForm, LeadModelForm
+from .forms import LeadForm, LeadModelForm, CustomCreationForm
 
 
+# КОТРОЛЛЕР ДЛЯ ВХОДА В СИСТЕМУ
+# -----------------------------
+class SignupView(CreateView):
+    template_name = "registration/signup.html"
+    # Форм класс для получения данных с формы
+    # UserCreationForm - не вызываем!!! т.к. она уже содержит всю информацию о пользователе
+    form_class = CustomCreationForm
+    # Метод успешной отправки формы, чтоб сделать переадресацию
+    # Для динамической ссылки используем метод reverse()
+
+    def get_success_url(self):
+        return reverse("login")
+
+
+# КОТРОЛЛЕР ПОСАДОЧНОЙ СТРАНИЦЫ
+# -----------------------------
 class LandingPageView(TemplateView):
     # Указываем шаблон который подключаем
     template_name = "landing.html"
@@ -16,6 +35,8 @@ class LandingPageView(TemplateView):
 #     return render(req, "landing.html")
 
 
+# КОТРОЛЛЕР СПИСКА ЛИДОВ
+# -----------------------------
 class LeadListView(ListView):
     template_name = "lead_list.html"
     # Подхватывает нашу модель со всеми leads
@@ -32,6 +53,9 @@ class LeadListView(ListView):
 #     }
 #     return render(req, "lead_list.html", context)
 
+
+# КОТРОЛЛЕР ОДНОГО ЛИДА
+# -----------------------------
 class LeadDetailView(DetailView):
     template_name = "lead_detail.html"
     queryset = Lead.objects.all()
@@ -45,6 +69,8 @@ class LeadDetailView(DetailView):
 #     return render(req, "lead_detail.html", context)
 
 
+# КОТРОЛЛЕР СОЗДАНИЯ ЛИДА
+# -----------------------------
 class LeadCreateView(CreateView):
     template_name = "lead_create.html"
     # Форм класс для получения данных с формы
@@ -55,6 +81,16 @@ class LeadCreateView(CreateView):
 
     def get_success_url(self):
         return reverse("leads:lead-list")
+
+    def form_valid(self, form):
+        # Todo отправка формы при создании
+        send_mail(
+            subject="A lead has been created",
+            message="Go to the site to see the new lead",
+            from_email="admin@mail.com",
+            recipient_list=["user@mail.com"]
+        )
+        return super(LeadCreateView, self).form_valid(form)
 
 
 # def lead_create(req):
@@ -71,6 +107,9 @@ class LeadCreateView(CreateView):
 #     }
 #     return render(req, "lead_create.html", context)
 
+
+# КОТРОЛЛЕР ОБНОВЛЕНИЯ ЛИДА ПО ID
+# -----------------------------
 class LeadUpdateView(UpdateView):
     template_name = "lead_update.html"
     # Подхватывает нашу модель со всеми leads
@@ -107,6 +146,8 @@ class LeadUpdateView(UpdateView):
 #     return render(req, "lead_update.html", context)
 
 
+# КОТРОЛЛЕР УДАЛЕНИЯ ЛИДА ПО ID
+# -----------------------------
 class LeadDeleteView(DeleteView):
     template_name = "lead_delete.html"
     # Подхватывает нашу модель со всеми leads

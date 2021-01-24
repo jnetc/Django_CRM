@@ -121,8 +121,17 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
+# Статические файлы
 STATIC_URL = '/static/'
+# Корневая папка со статикой
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
 # Создаем переменную модели пользователя
 AUTH_USER_MODEL = 'leads.User'
+
+# Создаем локальную, серверную отправку почты
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+# Переадресация после входа пользователя
+# По умолчанию /accounts/profile/
+LOGIN_REDIRECT_URL = '/leads'
