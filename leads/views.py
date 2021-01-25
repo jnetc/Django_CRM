@@ -1,5 +1,8 @@
 # Почтовая форма отправки
 from django.core.mail import send_mail
+# Проверяем, если пользователь зашел под учетной записью
+# Похоже на middleware в express.js
+from django.contrib.auth.mixins import LoginRequiredMixin
 # Переадресация
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -37,7 +40,7 @@ class LandingPageView(TemplateView):
 
 # КОТРОЛЛЕР СПИСКА ЛИДОВ
 # -----------------------------
-class LeadListView(ListView):
+class LeadListView(LoginRequiredMixin, ListView):
     template_name = "lead_list.html"
     # Подхватывает нашу модель со всеми leads
     # По умолчанию присваивает имя object_list
@@ -56,7 +59,7 @@ class LeadListView(ListView):
 
 # КОТРОЛЛЕР ОДНОГО ЛИДА
 # -----------------------------
-class LeadDetailView(DetailView):
+class LeadDetailView(LoginRequiredMixin, DetailView):
     template_name = "lead_detail.html"
     queryset = Lead.objects.all()
     context_object_name = "lead"
@@ -71,7 +74,7 @@ class LeadDetailView(DetailView):
 
 # КОТРОЛЛЕР СОЗДАНИЯ ЛИДА
 # -----------------------------
-class LeadCreateView(CreateView):
+class LeadCreateView(LoginRequiredMixin, CreateView):
     template_name = "lead_create.html"
     # Форм класс для получения данных с формы
     # LeadModelForm - не вызываем!!! т.к. она уже содержит всю информацию
@@ -110,7 +113,7 @@ class LeadCreateView(CreateView):
 
 # КОТРОЛЛЕР ОБНОВЛЕНИЯ ЛИДА ПО ID
 # -----------------------------
-class LeadUpdateView(UpdateView):
+class LeadUpdateView(LoginRequiredMixin, UpdateView):
     template_name = "lead_update.html"
     # Подхватывает нашу модель со всеми leads
     queryset = Lead.objects.all()
@@ -148,7 +151,7 @@ class LeadUpdateView(UpdateView):
 
 # КОТРОЛЛЕР УДАЛЕНИЯ ЛИДА ПО ID
 # -----------------------------
-class LeadDeleteView(DeleteView):
+class LeadDeleteView(LoginRequiredMixin, DeleteView):
     template_name = "lead_delete.html"
     # Подхватывает нашу модель со всеми leads
     queryset = Lead.objects.all()
@@ -157,10 +160,10 @@ class LeadDeleteView(DeleteView):
         return reverse("leads:lead-list")
 
 
-def lead_delete(req, pk):
-    lead = Lead.objects.get(id=pk)
-    lead.delete()
-    return redirect('/leads')
+# def lead_delete(req, pk):
+#     lead = Lead.objects.get(id=pk)
+#     lead.delete()
+#     return redirect('/leads')
 
 # def lead_update(req, id):
 

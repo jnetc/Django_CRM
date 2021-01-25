@@ -135,3 +135,6 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 # Переадресация после входа пользователя
 # По умолчанию /accounts/profile/
 LOGIN_REDIRECT_URL = '/leads'
+# Переадресация, если пользователь не зашел под своим именем
+# По умолчанию /accounts/login/?next=/leads/
+LOGIN_URL = "/login"
