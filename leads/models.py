@@ -12,7 +12,8 @@ from django.contrib.auth.models import AbstractUser
 # Модель авторизированого пользователя
 # User = get_user_model() - лучше не делать так!!!
 class User(AbstractUser):
-    pass
+    is_organisor = models.BooleanField(default=True)
+    is_agent = models.BooleanField(default=False)
 
 
 class UserProfile(models.Model):
@@ -28,7 +29,12 @@ class Lead(models.Model):
     age = models.IntegerField(default=0)
     # Зависимость от агента
     # При удалении агента, удаляются все "вести"
-    agent = models.ForeignKey("Agent", on_delete=models.CASCADE)
+    # Опциаональна!!
+    agent = models.ForeignKey(
+        "Agent", null=True, blank=True, on_delete=models.SET_NULL)
+    # Зависимость от агента
+    # При удалении агента, удаляются все "вести"
+    organisation = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.first_name

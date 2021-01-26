@@ -12,6 +12,8 @@ from django.urls import reverse
 from django.views.generic import TemplateView, ListView, DetailView, CreateView, UpdateView, DeleteView
 from .models import Lead, Agent
 from .forms import LeadForm, LeadModelForm, CustomCreationForm
+# Импортируем миксин из agents, да бы при создании lead была привязка
+from agents.mixins import OrganisorAndLoginRequiredMixin
 
 
 # КОТРОЛЛЕР ДЛЯ ВХОДА В СИСТЕМУ
@@ -44,9 +46,24 @@ class LeadListView(LoginRequiredMixin, ListView):
     template_name = "lead_list.html"
     # Подхватывает нашу модель со всеми leads
     # По умолчанию присваивает имя object_list
-    queryset = Lead.objects.all()
+    # queryset = Lead.objects.all()
     # Присваиваим своё имя объекту
     context_object_name = "leads"
+
+    def get_queryset(self):
+        user = self.request.user
+        # Первоначальный набор лидов для всей организации
+        if user.is_organisor:
+            queryset = Lead.objects.filter(organisation=user.userprofile)
+        else:
+            queryset = Lead.objects.filter(
+                organisation=user.agent.organisation)
+            # Откуда взяли agent__user?
+            # agent - из модели класса Lead через который привязан сам агент класс
+            # user - ключ в классе агента по которому и будет фильтрация
+            # agent__user - фильтруем по Lead'ам с правами агента
+            queryset = queryset.filter(agent__user=user)
+        return queryset
 
 
 # def lead_list(req):
@@ -61,8 +78,22 @@ class LeadListView(LoginRequiredMixin, ListView):
 # -----------------------------
 class LeadDetailView(LoginRequiredMixin, DetailView):
     template_name = "lead_detail.html"
-    queryset = Lead.objects.all()
     context_object_name = "lead"
+
+    def get_queryset(self):
+        user = self.request.user
+        # Первоначальный набор лидов для всей организации
+        if user.is_organisor:
+            queryset = Lead.objects.filter(organisation=user.userprofile)
+        else:
+            queryset = Lead.objects.filter(
+                organisation=user.agent.organisation)
+            # Откуда взяли agent__user?
+            # agent - из модели класса Lead через который привязан сам агент класс
+            # user - ключ в классе агента по которому и будет фильтрация
+            # agent__user - фильтруем по Lead'ам с правами агента
+            queryset = queryset.filter(agent__user=user)
+        return queryset
 
 # def lead_detail(req, pk):
 #     lead = Lead.objects.get(id=pk)
@@ -74,7 +105,7 @@ class LeadDetailView(LoginRequiredMixin, DetailView):
 
 # КОТРОЛЛЕР СОЗДАНИЯ ЛИДА
 # -----------------------------
-class LeadCreateView(LoginRequiredMixin, CreateView):
+class LeadCreateView(OrganisorAndLoginRequiredMixin, CreateView):
     template_name = "lead_create.html"
     # Форм класс для получения данных с формы
     # LeadModelForm - не вызываем!!! т.к. она уже содержит всю информацию
@@ -113,15 +144,19 @@ class LeadCreateView(LoginRequiredMixin, CreateView):
 
 # КОТРОЛЛЕР ОБНОВЛЕНИЯ ЛИДА ПО ID
 # -----------------------------
-class LeadUpdateView(LoginRequiredMixin, UpdateView):
+class LeadUpdateView(OrganisorAndLoginRequiredMixin, UpdateView):
     template_name = "lead_update.html"
     # Подхватывает нашу модель со всеми leads
-    queryset = Lead.objects.all()
+    #queryset = Lead.objects.all()
     # Форм класс для получения данных с формы
     # LeadModelForm - не вызываем!!! т.к. она уже содержит всю информацию
     form_class = LeadModelForm
     # Метод успешной отправки формы, чтоб сделать переадресацию
     # Для динамической ссылки используем метод reverse()
+
+    def get_queryset(self):
+        user = self.request.user
+        return Lead.objects.filter(organisation=user.userprofile)
 
     def get_success_url(self):
         return reverse("leads:lead-list")
@@ -151,13 +186,15 @@ class LeadUpdateView(LoginRequiredMixin, UpdateView):
 
 # КОТРОЛЛЕР УДАЛЕНИЯ ЛИДА ПО ID
 # -----------------------------
-class LeadDeleteView(LoginRequiredMixin, DeleteView):
+class LeadDeleteView(OrganisorAndLoginRequiredMixin, DeleteView):
     template_name = "lead_delete.html"
-    # Подхватывает нашу модель со всеми leads
-    queryset = Lead.objects.all()
 
     def get_success_url(self):
         return reverse("leads:lead-list")
+
+    def get_queryset(self):
+        user = self.request.user
+        return Lead.objects.filter(organisation=user.userprofile)
 
 
 # def lead_delete(req, pk):

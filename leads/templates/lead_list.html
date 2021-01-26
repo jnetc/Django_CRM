@@ -8,6 +8,7 @@
       <div>
         <h1 class="text-4xl text-grey-800">Leads</h1>
       </div>
+      {% if request.user.is_organisor %}
       <div>
         <a
           class="text-grey-500 hover:text-green-500"
@@ -15,6 +16,7 @@
           >Create a new lead</a
         >
       </div>
+      {% endif %}
     </div>
     <div class="flex flex-wrap -m-4">
       {% if leads %} {% for lead in leads %}
