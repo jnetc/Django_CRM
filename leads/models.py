@@ -35,6 +35,12 @@ class Lead(models.Model):
     # Зависимость от агента
     # При удалении агента, удаляются все "вести"
     organisation = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    category = models.ForeignKey(
+        "Category", related_name="leads", blank=True, null=True, on_delete=models.SET_NULL)
+    description = models.TextField()
+    date_added = models.DateTimeField(auto_now_add=True)
+    phone_number = models.CharField(max_length=20)
+    email = models.EmailField()
 
     def __str__(self):
         return self.first_name
@@ -50,6 +56,16 @@ class Agent(models.Model):
 
     def __str__(self):
         return self.user.username
+
+
+class Category(models.Model):
+    # New, Contected, Converted, Unconverted
+    name = models.CharField(max_length=30)
+    organisation = models.ForeignKey(
+        UserProfile, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
 
 
 # instance - объект данных пользователя
